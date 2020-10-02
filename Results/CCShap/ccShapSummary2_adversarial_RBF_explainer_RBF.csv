@@ -1,0 +1,3 @@
+1,"('unrelated_column_one', 0.515)","('unrelated_column_two', 0.485)"
+2,"('NumIlleg numeric', 0.03)","('NumImmig numeric', 0.115)","('NumUnderPov numeric', 0.035)","('PctUsePubTrans numeric', 0.01)","('population numeric', 0.025)","('unrelated_column_one', 0.415)","('unrelated_column_two', 0.37)"
+3,"('HousVacant numeric', 0.05)","('Nothing shown', 0.025)","('NumIlleg numeric', 0.08)","('NumImmig numeric', 0.115)","('NumUnderPov numeric', 0.05)","('PctBornSameState numeric', 0.01)","('PctUsePubTrans numeric', 0.045)","('numbUrban numeric', 0.005)","('population numeric', 0.055)","('racePctWhite numeric', 0.485)","('unrelated_column_one', 0.03)","('unrelated_column_two', 0.05)"

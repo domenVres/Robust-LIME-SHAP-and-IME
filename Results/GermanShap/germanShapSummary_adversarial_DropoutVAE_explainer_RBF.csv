@@ -1,0 +1,3 @@
+1,"('Gender', 0.81)","('LoanRateAsPercentOfIncome', 0.14)","('MissedPayments', 0.05)"
+2,"('CriticalAccountOrLoansElsewhere', 0.01)","('Gender', 0.15)","('JobClassIsSkilled', 0.19)","('LoanRateAsPercentOfIncome', 0.33)","('OwnsHouse', 0.03)","('Single', 0.28)","('YearsAtCurrentHome', 0.01)"
+3,"('Age', 0.01)","('Gender', 0.02)","('JobClassIsSkilled', 0.17)","('LoanAmount', 0.02)","('LoanDuration', 0.04)","('LoanRateAsPercentOfIncome', 0.21)","('MissedPayments', 0.01)","('OwnsHouse', 0.17)","('Single', 0.3)","('YearsAtCurrentHome', 0.03)","('YearsAtCurrentJob', 0.02)"

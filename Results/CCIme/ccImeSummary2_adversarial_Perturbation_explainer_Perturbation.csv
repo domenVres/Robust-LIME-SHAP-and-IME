@@ -1,0 +1,3 @@
+1,"('racePctWhite numeric', 0.565)","('unrelated_column_one', 0.225)","('unrelated_column_two', 0.21)"
+2,"('racePctWhite numeric', 0.08)","('unrelated_column_one', 0.485)","('unrelated_column_two', 0.435)"
+3,"('AsianPerCap numeric', 0.005)","('racePctWhite numeric', 0.35)","('unrelated_column_one', 0.29)","('unrelated_column_two', 0.355)"

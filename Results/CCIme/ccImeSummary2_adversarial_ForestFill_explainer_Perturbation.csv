@@ -1,0 +1,3 @@
+1,"('racePctWhite numeric', 0.555)","('unrelated_column_one', 0.265)","('unrelated_column_two', 0.18)"
+2,"('racePctWhite numeric', 0.105)","('unrelated_column_one', 0.41)","('unrelated_column_two', 0.485)"
+3,"('PctHousNoPhone numeric', 0.005)","('racePctWhite numeric', 0.335)","('unrelated_column_one', 0.325)","('unrelated_column_two', 0.335)"

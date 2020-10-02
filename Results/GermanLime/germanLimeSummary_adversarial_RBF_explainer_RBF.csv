@@ -1,0 +1,3 @@
+1,"('Age', 0.02)","('LoanDuration', 0.34)","('LoanRateAsPercentOfIncome', 0.64)"
+2,"('Age', 0.06)","('Gender', 0.47)","('LoanDuration', 0.13)","('LoanRateAsPercentOfIncome', 0.34)"
+3,"('Age', 0.27)","('Gender', 0.49)","('LoanDuration', 0.18)","('LoanRateAsPercentOfIncome', 0.02)","('SavingsAccountBalance_geq_500', 0.02)","('YearsAtCurrentHome', 0.01)","('YearsAtCurrentJob_geq_1_lt_4', 0.01)"

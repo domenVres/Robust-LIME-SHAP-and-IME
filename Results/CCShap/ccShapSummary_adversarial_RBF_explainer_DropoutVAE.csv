@@ -1,0 +1,3 @@
+1,"('NumIlleg numeric', 0.005)","('PctBornSameState numeric', 0.295)","('racePctWhite numeric', 0.165)","('unrelated_column_one', 0.535)"
+2,"('FemalePctDiv numeric', 0.005)","('NumIlleg numeric', 0.01)","('PctBornSameState numeric', 0.015)","('PctIlleg numeric', 0.005)","('PctUsePubTrans numeric', 0.005)","('RentLowQ numeric', 0.005)","('numbUrban numeric', 0.005)","('pctUrban numeric', 0.015)","('racePctWhite numeric', 0.715)","('racepctblack numeric', 0.005)","('unrelated_column_one', 0.215)"
+3,"('NumIlleg numeric', 0.055)","('NumImmig numeric', 0.005)","('PctBornSameState numeric', 0.62)","('PctForeignBorn numeric', 0.005)","('numbUrban numeric', 0.02)","('population numeric', 0.01)","('racePctWhite numeric', 0.09)","('unrelated_column_one', 0.195)"

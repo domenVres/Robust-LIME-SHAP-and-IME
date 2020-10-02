@@ -1,0 +1,3 @@
+1,"('Gender', 1.0)"
+2,"('Age', 0.45)","('LoanDuration', 0.48)","('LoanRateAsPercentOfIncome', 0.06)","('MissedPayments', 0.01)"
+3,"('Age', 0.35)","('LoanDuration', 0.32)","('LoanRateAsPercentOfIncome', 0.16)","('MissedPayments', 0.14)","('YearsAtCurrentHome', 0.03)"
