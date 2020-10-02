@@ -141,7 +141,7 @@ class LimeTabularExplainer(object):
                  sample_around_instance=False,
                  random_state=None,
                  training_data_stats=None,
-                 generator = "perturb",
+                 generator = "Perturb",
                  generator_specs = None,
                  dummies = None,
                  integer_attributes = []):
@@ -190,7 +190,7 @@ class LimeTabularExplainer(object):
                 if discretize_continuous is True. Must have the following keys:
                 means", "mins", "maxs", "stds", "feature_values",
                 "feature_frequencies"
-            generator: "perturb", "VAE", "DropoutVAE", "RBF" or "Forest". Determines, which data generator will be
+            generator: "Perturb", "VAE", "DropoutVAE", "RBF" or "Forest". Determines, which data generator will be
                 used for generating new samples
             generator_specs: only matters if generator is not "perturb". Dictionary with
                 values, required by generator
