@@ -148,7 +148,7 @@ class KernelExplainer(Explainer):
                 if self.generator_specs["experiment"] == "Compas":
                     df = pd.read_csv("..\Data\compas_forest.csv")
                 elif self.generator_specs["experiment"] == "German":
-                    df = pd.read_csv("..\Podatki\german_forest.csv")
+                    df = pd.read_csv("..\Data\german_forest.csv")
                 else:
                     df = pd.read_csv("..\Data\cc_forest.csv")
                 # pri CC presledke spremeni v pike
