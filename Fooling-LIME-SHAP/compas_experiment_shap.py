@@ -307,7 +307,13 @@ def experiment_main():
                                 dummy_idcs=dummy_indcs)
 		for explainer in ["Perturbation", "DropoutVAE", "RBF", "Forest", "ForestFill"]:
 			adv_kernel_explainer = adv_kernel_explainers[explainer]
-			explanations = adv_kernel_explainer.shap_values(xtest)
+
+			# Fill data option
+			if explainer == "ForestFill":
+				explanations = adv_kernel_explainer.shap_values(xtest, fill_data=True, data_location="..\Data/compas_forest_shap.csv")
+
+			else:
+				explanations = adv_kernel_explainer.shap_values(xtest)
 
 			# format for display
 			formatted_explanations = []
