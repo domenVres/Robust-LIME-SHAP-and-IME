@@ -74,7 +74,72 @@ adv_lime_forest.train(xtrain, ytrain, categorical_features=categorical_feature_i
 
 ## gLIME
 
-Method gLIME is implemented in file lime/lime_tabular.py. It is a modified version of method LIME from Python lime library [[2]](#2).
+Original implementation of method LIME that uses basic perturbation sampling is taken from [[2]](#2). We altered the version of the method for the tabular data (file "lime/lime_tabular.py") so generators MCD-VAE, rbfDataGen and treeEnsemble can be used for the sampling in the method (see [[1]](#1) for more details).
+
+To use the data generator inside the LIME method, the argument generator (possible values "DropoutVAE", "RBF", "Forest") has to be given to the constructor of LIME model (generator is set to "Perturb" by default, which represents the basic version of the method LIME). If data generator is being used, you should also provide the dictionary with generator specifications as argument generator_specs (see the Experiment section for the details on dictionary values). When using MCD-VAE it is also recommended to provide the arguments dummies (a list of lists of indices that represent the same one-hot encoded feature) and integer_attributes (the list of indices of integer features) so the samples can be corrected properly after they are generated. When using rbfDataGen and treeEnsemble last two arguments are not necessary as the data is being generated in R.
+
+### Example of use on COMPAS dataset
+
+In following code blocks we assume that our data is preprocessed (race is converted to binary feature (black or not) and all categorical features are one-hot encoded, see experiment code for more details). We assume that training set is stored in xtrain, test set is stored in xtest and list of feature names is stored in features. We also assume we have adversarial models from Experiment section trained and generator specifications stored (see Experiment section).
+
+Creation of the LIME model (training of the generators is also executed in the constructor) using data generators:
+
+```python
+# Import the lime models
+import lime
+
+# List of categorical features names and their indices
+categorical_feature_name = ['two_year_recid', 'c_charge_degree_F', 'c_charge_degree_M',\
+                            'sex_Female', 'sex_Male', 'race', 'unrelated_column_one', 'unrelated_column_two']
+categorical_feature_indcs = [features.index(c) for c in categorical_feature_name]
+
+# List of lists of indices representing the same one-hot encoded features as it should be provided to the LIME model
+# (note that each of the lists stored in the main list contains the indices for one one-hot encoded feature)
+dummy_indcs = [[categorical_feature_indcs[0]], [categorical_feature_indcs[1], categorical_feature_indcs[2]],\
+            [categorical_feature_indcs[3], categorical_feature_indcs[4]], [categorical_feature_indcs[5]],\
+            [categorical_feature_indcs[6]], [categorical_feature_indcs[7]]]
+
+# A simple way to find the integer features (we add only those that are not categorical features, as they are
+# handled in postprocessing the same way as one-hot encoded features)
+integer_attributes = [i for i, feature in enumerate(data_test.columns)
+                if (data_test[feature].dtype in ["int64", "int32", "int8", "uint64", "uint32", "uint8"] and i not in categorical_feature_indcs)]
+
+# Generate LIME model that uses MCD-VAE for sampling
+lime_dvae = lime.lime_tabular.LimeTabularExplainer(
+                        xtrain, # Training set (numpy array)
+                        feature_names=features, # List of features' names 
+                        discretize_continuous=False, # See original lime repository or lime_tabular code for details
+                        categorical_features=categorical_feature_indcs,
+                        generator = "DropoutVAE", # MCD-VAE
+                        generator_specs = dvae_specs, # See code from Experiment section
+                        dummies=dummy_indcs,
+                        integer_attributes=integer_attributes)
+
+# Generate LIME model that uses treeEnsemble for sampling
+lime_forest = lime.lime_tabular.LimeTabularExplainer(
+                        xtrain, # Training set (numpy array)
+                        feature_names=features, # List of features' names 
+                        discretize_continuous=False, # See original lime repository or lime_tabular code for details
+                        categorical_features=categorical_feature_indcs,
+                        generator = "Forest", # treeEnsemble
+                        generator_specs = forest_specs, # See code from Experiment section
+                        )
+```
+
+The code for explaining instancest from test set is same for gLIME and LIME (see [[2]](#2) for more details). The whole test set can be explained with following code:
+
+```python
+
+# Explain the predictions of adversarial model that uses MCD-VAE on the test set with LIME that uses MCD-VAE
+dvae_explanations = []
+for i in range(xtest.shape[0]):
+    dvae_explanations.append(lime_dvae.explain_instance(xtest[i], adv_lime_dvae.predict_proba).as_list())
+
+# Explain the predictions of adversarial model that uses treeEnsemble on the test set with LIME that uses treeEnsemble
+forest_explanations = []
+for i in range(xtest.shape[0]):
+    forest_explanations.append(lime_forest.explain_instance(xtest[i], adv_lime_forest.predict_proba).as_list())
+```
 
 ## gSHAP
 
