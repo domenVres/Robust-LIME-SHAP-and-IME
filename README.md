@@ -117,11 +117,6 @@ semiArtificial
 https://CRAN.R-project.org/package=semiArtificial
 
 <a id="7">[7]</a>
-Štrumbelj, Erik and Kononenko, Igor (2013)
-Explaining prediction models and individual predictions with feature contributions
-Knowledge and Information Systems, 41, 647-665
-
-<a id="7">[7]</a>
 Štrumbelj, E. and Kononenko, I. (2013)
 Explaining prediction models and individual predictions with feature contributions
 Knowledge and Information Systems, 41, 647-665
