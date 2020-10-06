@@ -164,7 +164,7 @@ forest_specs["feature_names"] = features
 adv_shap_dvae = Adversarial_Kernel_SHAP_Model(racist_model_f(), innocuous_model_psi(), generator = "DropoutVAE", generator_specs = dvae_specs).
             train(xtrain, ytrain, feature_names=features, dummy_idcs=dummy_indcs, integer_idcs=integer_attributes)
 adv_shap_forest = Adversarial_Kernel_SHAP_Model(racist_model_f(), innocuous_model_psi(), generator = "Forest", generator_specs = forest_specs).
-            train(xtrain, ytrain, feature_names=features)
+            train(xtrain, ytrain, feature_names=features, dummy_idcs=dummy_indcs)
 
 # Create gSHAP model that MCD-VAE too explain predictions of adversarial shap model that uses MCD-VAE
 shap_dvae = shap.KernelExplainer(
@@ -181,13 +181,13 @@ shap_dvae = shap.KernelExplainer(
 shap_forest = shap.KernelExplainer(
     adv_shap_forest.predict, # Predict function of the model we are explaining has to be given to the Kernel SHAP constructor
     xtrain, generator="Forest",
-    generator_specs=generator_specs,
+    generator_specs=forest_specs,
     dummy_idcs=dummy_indcs
 )
 
 ```
 
-The code for explaining instancest from test set is same for gSHAP and Kernel SHAP (see [[3]](#3) for more details), except when the treeEnsemble is being used with option to generate the distributon set around the incoming instance. In that case the argument fill_data (which is added in gSHAP) of function shap_values has to be set to True. In that case you also have to provide the path to the file containing in R generated distribution sets.
+The code for explaining instancest from test set is same for gSHAP and Kernel SHAP (see [[3]](#3) for more details), except when the treeEnsemble is being used with option to generate the distributon set around the incoming instance. In that case the argument fill_data (which is added in gSHAP) of function shap_values has to be set to True. In that case you also have to provide the path to the file containing in R generated distribution sets. When the fill_data is set to True, you can also provide the argument distribution_size (it is set to 100 by default), which represents the size of each generated distribution set.
 
 Aslo be careful when using gSHAP - if you provide the dummy_idcs to the constructor, the method will group the features that are in the same list in dummy_idcs (see [[3]](#3) for more details on grouping of features). Therefore the group that represents the same one-hot encoded feature will be given only one contribution (the contribution of the original feature). Check the experiment code for shap to see how features' names were adopted accordingly in formatted explanations.
 
@@ -204,12 +204,91 @@ forest_explanations =  shap_forest.shap_values(xtest)
 
 # Explanation using treeEnsemble with distribution set being generated around the incoming instance (fill_data
 # has to be set to True and path to the generated distribution sets has to be provided)
-forestFill_explanations = shap_forest.shap_values(xtest, fill_data=True, data_location="Data/compas_forest_shap.csv")
+forestFill_explanations = shap_forest.shap_values(xtest, fill_data=True, data_location="Data/compas_forest_shap.csv", distribution_size=100)
 ```
 
 ## gIME
 
-Method gIME is implemented in file shap/explainers/sampling.py. It is a modified version of method IME [[7]](#7) included in Python shap library [[3]](#3).
+Method gIME represents the modified version of method IME from shap repository [[7]](#7). The base implementation of the method (basic perturbation sampling) is taken from shap repository [[3]](3#). The code for gIME is located in file shap/explainers/sampling.py. Modified method supports the usage of generators MCD-VAE and treeEnsemble, but with last the sampling population has to be generated around the incoming isntance (fill_data has to be set to True in the argument of shap_values function).
+
+Method can be used the same way as the gSHAP method (Kernel Explainer is a parent class of a sampling explainer, that is also why the fill_data has to be set to True manually). In this section we just provide the example code for gIME, for more details about the variables used see gSHAP section.
+
+### Example of use on COMPAS dataset
+
+In following code blocks we make the same assumptions about stored data as in section gSHAP. IME models that use data generators can be generated with following code:
+
+```python
+# Import shap library
+import shap
+
+# Adversarial IME model that uses MCD-VAE
+adv_ime_dvae = Adversarial_IME_Model(racist_model_f(), innocuous_model_psi_two(), generator = "DropoutVAE", generator_specs = dvae_specs).
+    train(xtrain, ytrain, feature_names=features, dummy_idcs=dummy_indcs, integer_idcs=integer_attributes, perturbation_multiplier=1)
+
+# Adversarial IME model that uses treeEnsemble
+adv_ime_forest = Adversarial_IME_Model(racist_model_f(), innocuous_model_psi_two(), generator = "Forest", generator_specs = forest_specs).
+    train(xtrain, ytrain, feature_names=features, dummy_idcs=dummy_indcs, perturbation_multiplier=1)
+
+# Create IME explainer that uses MCD-VAE too explains predictions of adversarial ime model that uses MCD-VAE
+ime_dvae = shap.SamplingExplainer(adv_ime_dvae.predict,
+                                xtrain,
+                                generator="DropoutVAE",
+                                generator_specs=dvae_specs,
+                                dummy_idcs=dummy_indcs,
+                                integer_idcs=integer_attributes,
+                                instance_multiplier=1000)
+
+# Create IME explainer that uses treeEnsemble too explains predictions of adversarial ime model that uses treeEnsemble
+ime_forest = shap.SamplingExplainer(adv_ime_forest.predict,
+                                    xtrain,
+                                    generator="Forest",
+                                    generator_specs=forest_specs,
+                                    dummy_idcs=dummy_indcs)
+```
+
+To explain the training set, we can use the same code as for gSHAP:
+
+```python
+# Explanations using MCD-VAE
+dvae_explanations = ime_dvae.shap_values(xtest)
+
+# Explanations using treeEnsemble (fill_data has to be set to True)
+forest_explanations = ime_forest.shap_values(xtest, fill_data=True, data_location="Data/compas_forest_ime.csv", distribution_size=1000)
+```
+
+### Convergence rate of IME
+
+Method gIME can also determine the required number of samples automatically, using the variance of the sampling population (see [[10]](#10) for more details). To do that, the argument nsamples of sha_values function has to be set to "variance". Additional arguments that can be provided using the automatic number of samples are alpha (the probability that error is bigger than desired, set to 0.9 by default) and expected_error (the desired error). See [[10]](#10) for more details about those two arguments.
+
+With gIME you can also measure the error of estimates, variance of the sampling population, required number of samples and execution time on test set. To do that you first have to call function create_experiment_table to which you provide the true Shapley values (oherwise the error can't be calculated). This function has to be called before shap_values. In shap_values you have to set the argument is_experiment to True in order to execute the experiment on given data. You can access the experiment data (it is stored in dataframe) with function get_experiment_dataframe. Bellow is the code which shows both how to determine the umber of samples automatically and how to conduct the convergence rate experiment:
+
+```python
+# Import shap library
+import shap
+
+# Load pretrained Naive Bayes classifier
+bayes = pickle.load(open("Data/IME/Compas/bayes_model.sav", 'rb'))
+# Load precalculated true Shapley values
+shapley_values = np.load("Data/IME/Compas/bayes_values.npy")
+
+# gIME method that uses MCD-VAE to explain the predictions of loaded Naive Bayes
+ime_dvae = shap.SamplingExplainer(bayes.predict, xtrain, generator="DropoutVAE", generator_specs=generator_specs,
+                                dummy_idcs=dummy_indcs, integer_idcs=integer_attributes, instance_multiplier=100)
+
+# This function has to be called before the experiment is conducted
+ime_dvae.create_experiment_table(shapley_values)
+
+# Contributions are calculated with automatically determined number of samples, the experiment data is stored
+dvae_explanations = ime_dvae.shap_values(xtest,
+                                        nsamples="variance", # So the number of samples is automatically determined
+                                        alpha=0.95, # The probability that error is too big
+                                        expected_error=0.1, # The desired size of the error
+                                        is_experiment = True # So the data for experiment is being stored
+                                        )
+
+# Get the experiment data
+dvae_data = ime_dvae.get_experiment_dataframe()
+```
 
 ## References
 
@@ -258,3 +337,8 @@ Advances in Neural Information Processing Systems 30, 4765-4774
 Ribeiro, M. T. and Singh, S. and Guestrin, C. (2016)
 "Why Should I Trust You?": Explaining the Predictions of Any Classifier
 Proceedings of the 22nd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining, 1135-1144
+
+<a id="10">[10]</a>
+Štrumbelj, E. and Kononenko, I. (2010)
+An Efficient Explanation of Individual Classifications using Game Theory
+Journal of Machine Learning Research, 11, 1-18
