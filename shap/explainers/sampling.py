@@ -56,7 +56,7 @@ class SamplingExplainer(KernelExplainer):
         nsamples: If set to "variance", then the number of samples is determined by the variance ofthe population,
             like it is described in the paper. If set to "auto" or not given, the number of samples is determined
             as in original SHAP package.
-        alpha: float in [0, 1], the probability of an error, as in paper. Default value: 0.99
+        alpha: float in [0, 1], the probability that error is bigger than desired, as in paper. Default value: 0.99
         expected_error: float, desired error size, as in paper. Default value: 0.01
         is_experiment: Boolean, if True, variance of popuation, execution time and error of the estimates are saved.
             Used for experiment of IME convergence rate. False by default
