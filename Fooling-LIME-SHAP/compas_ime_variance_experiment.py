@@ -78,10 +78,10 @@ dvae_data.to_csv("../Results/CompasImeVariance/dvae_bayes.csv", index = False)
 
 # Experiment for ForestFill
 forest_explainer.shap_values(xtest, nsamples="variance", is_experiment = True, fill_data=True, data_location="..\Data/IME/compas_forest_generated.csv", distribution_size=1000)
-dvae_data = forest_explainer.get_experiment_dataframe()
+forest_data = forest_explainer.get_experiment_dataframe()
 
 # Save dataframe for ForestFill
-dvae_data.to_csv("../Results/CompasImeVariance/forest_bayes.csv", index = False)
+forest_data.to_csv("../Results/CompasImeVariance/forest_bayes.csv", index = False)
 
 """
 Linear SVM
