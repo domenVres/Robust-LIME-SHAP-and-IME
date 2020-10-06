@@ -172,7 +172,7 @@ def experiment_main():
 
 		for explainer in ["Perturbation", "DropoutVAE", "ForestFill"]:
 			adv_kernel_explainer = adv_kernel_explainers[explainer]
-			explanations = adv_kernel_explainer.shap_values(xtest, fill_data=True, data_location="..\Podatki/german_forest_ime.csv", distribution_size=1000)
+			explanations = adv_kernel_explainer.shap_values(xtest, fill_data=True, data_location="...\Data/german_forest_ime.csv", distribution_size=1000)
 
 			# format for display
 			formatted_explanations = []
