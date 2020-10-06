@@ -1,10 +1,10 @@
 # Robust-LIME-SHAP-and-IME
 
-This is the implementation of methods gLIME, gSHAP and gIME for tabular data (see [[1]](#1) for description of the methods). Methods use three different data generators. Variational autoencoder using Monte Carlo dropout is implemented in Python and is located in folder Generators. The code was downloaded from [[5]](#5). rbfDataGen and treeEnsemble are not yet implemented in Python, so their R library semiArtificial[[6]](#6) implementation is used.
+This is the implementation of methods gLIME, gSHAP and gIME for tabular data (see [[1]](#1) for description of the methods). Methods use three different data generators. Variational autoencoder using Monte Carlo dropout is implemented in Python and is located in folder Generators. The code was downloaded from [[5]](#5). rbfDataGen and treeEnsemble are not yet implemented in Python, so their R library semiArtificial [[6]](#6) implementation is used.
 
 ## Experiment
 
-The code for experiment, conducted in [[1]](#1) can be found in folder Fooling-LIME-SHAP. The folder is a modified version of the original code from Slack [[4]](#4). To run experiment by yourself, run the selected file (they are named with the explanation method tested in the experiment and the dataset on which the experiment was conducted, in files containing "ime_variance" in the name is code for IME convergence rate experiment.) If you are using generators rbfDataGen and treeEnsemble, you have to generate the data in R (you can use R scripts from folder "R code". At the beginning of every experiment the execution stops after saving the training set, so you have the time to generate data in R.
+The code for experiment, conducted in [[1]](#1) can be found in folder Fooling-LIME-SHAP. The folder is a modified version of the original code from Slack [[4]](#4). To run experiment by yourself, run the selected file (they are named with the explanation method tested in the experiment and the dataset on which the experiment was conducted). In files that contain "ime_variance" in their name is code for IME convergence rate experiment. If you are using generators rbfDataGen and treeEnsemble, you have to generate the data in R (you can use R scripts from folder "R code"). At the beginning of every experiment the execution stops after saving the training set, so you have the time to generate data in R.
 
 For IME convergence rate experiment, trained classifiers and true Shapley values are uploaded to the repository, so you don't have to train/calculate them by yourself (this can take some time) and can be found in folder "Data/IME".
 
@@ -34,7 +34,7 @@ class innocuous_model_psi:
         return one_hot_encode(np.array([0 if x[unrelated_indcs] > 0 else 1 for x in X]))
 ```
 
-Then we can create adversarial model for method LIME on COMPAS dataset with following code:
+Then we can create adversarial models for method LIME on COMPAS dataset with following code:
 
 ```python
 # Import adversarial models
@@ -46,7 +46,7 @@ dvae_specs = {
     "intermediate_dim": 16, # Hidden layer of encoder and decoder
     "latent_dim": xtrain.shape[1] // 2, # Dimension of latent space (output of encoder and input of decoder)
     "dropout": 0.3, # The probability of dropping a neuron in forward pass through the decoder
-    "epochs": 1000 # The number of epochs during the training of the adversarial model
+    "epochs": 100 # The number of epochs during the training of the adversarial model
 }
 
 # Create adversarial model that uses MCD-VAE
@@ -62,7 +62,7 @@ adv_lime_forest = Adversarial_Lime_Model(racist_model_f(), innocuous_model_psi()
 
 ```
 
-For training of the adversarial model that uses MCD-VAE, it is recommended to give the training function the indices of integer features in dataset (so after the data is generated with MCD-VAE, those features could be rounded) and perturbation_multiplier (integer that tells how many new samples are generated for each instance in training proces). For training of all adversarial models it is recommended to give the training function the least of features' names and the list of categorical features' indices. We will assume that we have all of this already stored (see experiment code if you are interested in how to get these values from dataset).
+For training of the adversarial model that uses MCD-VAE, it is recommended to give the training function the indices of integer features in dataset (so after the data is generated with MCD-VAE, those features could be rounded) and perturbation_multiplier (integer that tells how many new samples are generated for each instance in training proces). For training of all adversarial models it is recommended to give the training function the list of features' names and the list of categorical features' indices. In following code block we assume that we have all of this already stored (see experiment code if you are interested in how to get these values from dataset).
 
 ```python
 # Training of the adversarial model that uses MCD-VAE (We assume that training set is stored in xtrain and that target variable is stored in ytrain).
