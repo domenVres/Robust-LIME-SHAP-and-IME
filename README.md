@@ -76,7 +76,7 @@ adv_lime_forest.train(xtrain, ytrain, categorical_features=categorical_feature_i
 
 Original implementation of method LIME that uses basic perturbation sampling is taken from [[2]](#2). We altered the version of the method for the tabular data (file "lime/lime_tabular.py") so generators MCD-VAE, rbfDataGen and treeEnsemble can be used for the sampling in the method (see [[1]](#1) for more details).
 
-To use the data generator inside the LIME method, the argument generator (possible values "DropoutVAE", "RBF", "Forest") has to be given to the constructor of LIME model (generator is set to "Perturb" by default, which represents the basic version of the method LIME). If data generator is being used, you should also provide the dictionary with generator specifications as argument generator_specs (see the Experiment section for the details on dictionary values). When using MCD-VAE it is also recommended to provide the arguments dummies (a list of lists of indices that represent the same one-hot encoded feature) and integer_attributes (the list of indices of integer features) so the samples can be corrected properly after they are generated. When using rbfDataGen and treeEnsemble last two arguments are not necessary as the data is being generated in R.
+To use the data generator inside the LIME method, the argument generator (possible values: "DropoutVAE", "RBF" and "Forest") has to be given to the constructor of LIME model (generator is set to "Perturb" by default, which represents the basic version of the method LIME). If data generator is being used, you should also provide the dictionary with generator specifications as argument generator_specs (see the Experiment section for the details on dictionary values). When using MCD-VAE it is also recommended to provide the arguments dummies (a list of lists of indices that represent the same one-hot encoded feature) and integer_attributes (the list of indices of integer features) so the samples can be corrected properly after they are generated. When using rbfDataGen and treeEnsemble last two arguments are not necessary as the data is being generated in R.
 
 ### Example of use on COMPAS dataset
 
@@ -143,13 +143,76 @@ for i in range(xtest.shape[0]):
 
 ## gSHAP
 
-Method gSHAP is implemented in file shap/explainers/kernel.py. It is a modified version of method Kernel SHAP [[8]](#8) from Python shap library [[3]](#3).
+Method gSHAP represents the modified version of method Kernel SHAP from shap repository [[3]](#3). The code for this method is located in file shap/explainers/kernel.py. gSHAP supports the usage of generators MCD-VAE, rbfDataGen and treeEnsemble (two possibble versions: the one with fill_data set to False, generates the distribution set according to the whole training set and the one with fill_data set to True generates the distribution set around the incoming instance).
+
+To use the data generator inside SHAP, the argument generator (possible values: "DropoutVAE", "RBF" and "Forest") has to be given to the constructor of Kernel SHAP model (generator is set to "Perturb" by default, which represents the basic version of Kernel SHAP). If data generator is being used, you should also provide the dictionary with generator specifications (argument generator_specs), list of lists of indices of one-hot encoded features (argument dummy_idcs) and list of indices of integer features (argument integer_idcs). See gLIME section for more details on everything listed above. Only difference to the values used in gLIME section is in generator specifications for treeEnsemble and rbfDataGen, where "feature_names" value also has to be provided. This is due to fact that the data is being one-hot encoded after is being loaded from R and we need to store the original names so we can put the features in the correct order. If you are using MCD-VAE, you can set the size of distribution size with the instance_multiplier argument (it is set to 100 by default).
+
+### Example of use on COMPAS dataset
+
+In following code blocks the same assumptions are made as in gLIME section. Additionally we assume that we have list of lists of indices of one-hot encoded features (variable dummy_indcs), list of categorical features' indices (variable ategorical_feature_indcs) and list of integer features (variable integer_attributes) already stored. Check code in gLIME section for details on those variables.
+
+Creation of the Kernel SHAP model (training of the generators is also executed in the constructor) using data generators:
+
+```python
+# Import shap models
+import shap
+
+# We have to add the list of feature names (recall that it is stored in features) to the generator specifications of treeEnsemble
+forest_specs["feature_names"] = features
+
+# Create adversarial models for SHAP
+adv_shap_dvae = Adversarial_Kernel_SHAP_Model(racist_model_f(), innocuous_model_psi(), generator = "DropoutVAE", generator_specs = dvae_specs).
+            train(xtrain, ytrain, feature_names=features, dummy_idcs=dummy_indcs, integer_idcs=integer_attributes)
+adv_shap_forest = Adversarial_Kernel_SHAP_Model(racist_model_f(), innocuous_model_psi(), generator = "Forest", generator_specs = forest_specs).
+            train(xtrain, ytrain, feature_names=features)
+
+# Create gSHAP model that MCD-VAE too explain predictions of adversarial shap model that uses MCD-VAE
+shap_dvae = shap.KernelExplainer(
+    adv_shap_dvae.predict, # Predict function of the model we are explaining has to be given to the Kernel SHAP constructor
+    xtrain,
+    generator="DropoutVAE",
+    generator_specs=dvae_specs,
+    dummy_idcs=dummy_indcs,
+    integer_idcs=integer_attributes,
+    instance_multiplier = 100 # Size of the distribution set
+)
+
+# Create gSHAP model that uses treeEnsemble too explain predictions of adversarial shap model that uses treeEnsemble
+shap_forest = shap.KernelExplainer(
+    adv_shap_forest.predict, # Predict function of the model we are explaining has to be given to the Kernel SHAP constructor
+    xtrain, generator="Forest",
+    generator_specs=generator_specs,
+    dummy_idcs=dummy_indcs
+)
+
+```
+
+The code for explaining instancest from test set is same for gSHAP and Kernel SHAP (see [[3]](#3) for more details), except when the treeEnsemble is being used with option to generate the distributon set around the incoming instance. In that case the argument fill_data (which is added in gSHAP) of function shap_values has to be set to True. In that case you also have to provide the path to the file containing in R generated distribution sets.
+
+Aslo be careful when using gSHAP - if you provide the dummy_idcs to the constructor, the method will group the features that are in the same list in dummy_idcs (see [[3]](#3) for more details on grouping of features). Therefore the group that represents the same one-hot encoded feature will be given only one contribution (the contribution of the original feature). Check the experiment code for shap to see how features' names were adopted accordingly in formatted explanations.
+
+Code for explaining the whole test set (with MCD-VAE and treeEnsemble using both options):
+
+```python
+# Explanations using MCD-VAE (the model we are explaining does not have to be provided this time as it was already
+# given to the constructor of the Kernel SHAP model)
+dvae_explanations = shap_dvae.shap_values(xtest)
+
+# Explanations using treeEnsemble (fill_data is by default set to False so this option creates the distribution
+# set based on the whole training set)
+forest_explanations =  shap_forest.shap_values(xtest)
+
+# Explanation using treeEnsemble with distribution set being generated around the incoming instance (fill_data
+# has to be set to True and path to the generated distribution sets has to be provided)
+forestFill_explanations = shap_forest.shap_values(xtest, fill_data=True, data_location="Data/compas_forest_shap.csv")
+```
 
 ## gIME
 
 Method gIME is implemented in file shap/explainers/sampling.py. It is a modified version of method IME [[7]](#7) included in Python shap library [[3]](#3).
 
 ## References
+
 <a id="1">[1]</a>
 Anonymous (2020)
 Better sampling in explanation methods can prevent dieselgate-like deception
