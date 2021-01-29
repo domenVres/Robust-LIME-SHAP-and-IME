@@ -293,7 +293,7 @@ dvae_data = ime_dvae.get_experiment_dataframe()
 ## References
 
 <a id="1">[1]</a>
-Anonymous (2020)
+Vreš, D. and Robnik Šikonja, M. (2020)
 Better sampling in explanation methods can prevent dieselgate-like deception
 Submitted to International Conference on Learning Representations
 https://openreview.net/forum?id=s0Chrsstpv2
